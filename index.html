@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HaxIA Partidas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+  /* Layout: placar de transmissão em cima, o campo inteiro na largura, a lista de partidas como uma súmula embaixo */
+  :root {
+    --bg: #eef1ec; --painel: #ffffff; --texto: #1c2420; --suave: #5d6a60; --linha: #d3dbd0;
+    --verm: #cc4f38; --azul: #3a68c8; --campo: #5f7f4c; --destaque: #2f6b3c;
+    --f-placar: "Saira Condensed", "Arial Narrow", sans-serif;
+    --f-texto: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111512; --painel: #1a201b; --texto: #e4eae3; --suave: #95a196; --linha: #2b342c;
+      --verm: #ec735c; --azul: #6c96ee; --campo: #55744a; --destaque: #78c487; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111512; --painel: #1a201b; --texto: #e4eae3; --suave: #95a196; --linha: #2b342c;
+    --verm: #ec735c; --azul: #6c96ee; --campo: #55744a; --destaque: #78c487; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--texto); font: 16px/1.5 var(--f-texto); }
+  .pagina {
+    max-width: 1080px; margin: 0 auto; display: grid; gap: 20px;
+    padding-block: 20px 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .topo { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
+  .marca { font: 800 30px/1 var(--f-placar); letter-spacing: 0.02em; margin: 0; }
+  .marca span { color: var(--destaque); }
+  .sub { color: var(--suave); margin: 0; max-width: 60ch; }
+
+  .tela { background: var(--painel); border: 1px solid var(--linha); border-radius: 10px; overflow: hidden; }
+  .placar {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+    padding: 10px 16px; border-bottom: 1px solid var(--linha);
+  }
+  .time { font: 700 clamp(17px, 3.4vw, 24px)/1.1 var(--f-placar); letter-spacing: 0.02em; text-transform: uppercase; min-width: 0; overflow-wrap: anywhere; }
+  .time.v { color: var(--verm); text-align: right; } .time.a { color: var(--azul); }
+  .gols { font: 800 clamp(28px, 6vw, 40px)/1 var(--f-placar); font-variant-numeric: tabular-nums; display: flex; gap: 10px; align-items: center; }
+  .gols .x { color: var(--suave); font-weight: 500; font-size: 0.6em; }
+  .gols .v { color: var(--verm); } .gols .a { color: var(--azul); }
+  canvas { display: block; width: 100%; background: var(--campo); }
+  .controles { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--linha); }
+  button, select {
+    font: 600 15px var(--f-texto); color: var(--texto); background: var(--bg); border: 1px solid var(--linha);
+    border-radius: 6px; padding: 6px 12px; cursor: pointer;
+  }
+  button:focus-visible, select:focus-visible, input:focus-visible, .item:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
+  #barra { flex: 1 1 180px; min-width: 0; accent-color: var(--destaque); }
+  .relogio { font: 700 20px var(--f-placar); font-variant-numeric: tabular-nums; min-width: 3.2em; }
+  .estado { color: var(--suave); font-size: 14px; min-width: 7em; }
+  .legenda { color: var(--suave); font-size: 14px; margin: 0; padding: 0 16px 12px; }
+  .aviso { padding: 40px 16px; text-align: center; color: var(--suave); }
+
+  .lista { display: grid; gap: 0; border-top: 2px solid var(--texto); }
+  .lista h2 { font: 700 15px var(--f-placar); text-transform: uppercase; letter-spacing: 0.08em; color: var(--suave); margin: 10px 0 4px; }
+  .item {
+    display: grid; grid-template-columns: 6.5em 1fr auto; gap: 4px 16px; align-items: baseline;
+    padding: 12px 4px; border-bottom: 1px solid var(--linha); cursor: pointer; background: none; text-align: left; border-radius: 0;
+    border-left: 0; border-right: 0; border-top: 0; font-weight: 400;
+  }
+  .item:hover { background: var(--painel); }
+  .item[aria-current="true"] { background: var(--painel); box-shadow: inset 3px 0 0 var(--destaque); }
+  .item .data { color: var(--suave); font-variant-numeric: tabular-nums; font-size: 14px; }
+  .item .tit { font: 700 19px var(--f-placar); letter-spacing: 0.02em; min-width: 0; }
+  .item .res { font: 800 20px var(--f-placar); font-variant-numeric: tabular-nums; }
+  .item .txt { grid-column: 2 / 4; color: var(--suave); font-size: 15px; min-width: 0; }
+  @media (max-width: 520px) {
+    .item { grid-template-columns: 1fr auto; }
+    .item .data { grid-column: 1 / 3; }
+    .item .txt { grid-column: 1 / 3; }
+  }
+</style>
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+
+<div class="pagina">
+  <header class="topo">
+    <h1 class="marca">Hax<span>IA</span> · Partidas</h1>
+    <p class="sub">Partidas da IA de futsal 3x3 do HaxBall, jogadas no simulador. O vermelho e o azul são versões da IA, os três jogadores de cada time.</p>
+  </header>
+
+  <section class="tela" aria-label="Partida">
+    <div class="placar">
+      <div class="time v" id="nv">…</div>
+      <div class="gols"><span class="v" id="gv">0</span><span class="x">x</span><span class="a" id="ga">0</span></div>
+      <div class="time a" id="na">…</div>
+    </div>
+    <canvas id="campo" width="1080" height="470"></canvas>
+    <div class="aviso" id="aviso" hidden></div>
+    <div class="controles">
+      <button id="play" type="button">Pausar</button>
+      <label class="estado" for="vel" hidden>Velocidade</label>
+      <select id="vel" aria-label="Velocidade">
+        <option value="0.25">0,25x</option><option value="0.5">0,5x</option>
+        <option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
+      </select>
+      <input type="range" id="barra" min="0" value="0" aria-label="Momento da partida">
+      <span class="relogio" id="rel">0:00</span>
+      <span class="estado" id="est"></span>
+    </div>
+    <p class="legenda">GK, VL e PV: a posição de cada jogador naquele momento (goleiro, volante, pivô). O anel branco é o chute armado. Espaço pausa, as setas andam quadro a quadro.</p>
+  </section>
+
+  <nav class="lista" aria-label="Partidas publicadas">
+    <h2>Partidas publicadas</h2>
+    <div id="itens"></div>
+  </nav>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const cv = $("campo"), cx = cv.getContext("2d");
+let D = null, Q = [], M = null, t = 0, tocando = true, vel = 1, ultimo = null, PASSOS_POR_S = 60;
+let indice = [];
+
+function cor(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+
+function ajustar() {
+  if (!M) return;
+  const w = cv.clientWidth || 800, dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(w * dpr); cv.height = Math.round(w * (M.h / M.w) * dpr);
+}
+window.addEventListener("resize", ajustar);
+
+function disco(x, y, r, preench, borda, larg) {
+  cx.beginPath(); cx.arc(x, y, r, 0, 2 * Math.PI);
+  cx.fillStyle = preench; cx.fill(); cx.lineWidth = larg; cx.strokeStyle = borda; cx.stroke();
+}
+
+function desenhar() {
+  if (!D) return;
+  const i = Math.min(Math.floor(t), Q.length - 1), j = Math.min(i + 1, Q.length - 1), f = t - i;
+  const a = Q[i], b = Q[j], lerp = (p, q) => p + (q - p) * f;
+  const s = cv.width / (2 * M.w);
+  cx.setTransform(1, 0, 0, 1, 0, 0);
+  cx.fillStyle = cor("--campo"); cx.fillRect(0, 0, cv.width, cv.height);
+  cx.setTransform(s, 0, 0, s, cv.width / 2, cv.height / 2);
+  cx.lineCap = "round"; cx.lineJoin = "round";
+  for (const l of M.linhas) {
+    cx.beginPath(); cx.moveTo(l.p[0][0], l.p[0][1]);
+    for (const p of l.p.slice(1)) cx.lineTo(p[0], p[1]);
+    cx.strokeStyle = "rgba(240,244,236,0.92)"; cx.lineWidth = 3; cx.stroke();
+  }
+  for (const d of M.discos) disco(d[0], d[1], d[2], "#f4f4f0", "#1c1c1c", 2);
+  const verm = cor("--verm"), azul = cor("--azul");
+  for (let k = 0; k < 6; k++) {
+    const x = lerp(a[2][k][0], b[2][k][0]), y = lerp(a[2][k][1], b[2][k][1]);
+    const armado = a[3][k];
+    disco(x, y, D.raio_jog, k < 3 ? verm : azul, armado ? "#ffffff" : "#141414", armado ? 4 : 2);
+    cx.fillStyle = "#ffffff"; cx.font = "700 12px 'Saira Condensed', sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
+    cx.fillText(a.length > 8 ? a[8][k] : D.papeis[k], x, y + 1);
+  }
+  disco(lerp(a[0], b[0]), lerp(a[1], b[1]), D.raio_bola, "#ffcc00", "#141414", 2);
+  $("gv").textContent = a[4]; $("ga").textContent = a[5];
+  const seg = Math.floor(a[6] / 60);
+  $("rel").textContent = Math.floor(seg / 60) + ":" + String(seg % 60).padStart(2, "0");
+  $("est").textContent = ["saída de bola", "", "gol!"][a[7]] || "";
+  $("barra").value = i;
+}
+
+function laco(agora) {
+  if (D && ultimo !== null && tocando) {
+    t = Math.min(t + (agora - ultimo) / 1000 * PASSOS_POR_S * vel, Q.length - 1);
+    if (t >= Q.length - 1) pausar(true);
+  }
+  ultimo = agora; desenhar(); requestAnimationFrame(laco);
+}
+function pausar(p) { tocando = !p; $("play").textContent = tocando ? "Pausar" : "Tocar"; }
+$("play").onclick = () => { if (t >= Q.length - 1) t = 0; pausar(tocando); };
+$("vel").onchange = (e) => { vel = +e.target.value; };
+$("barra").oninput = (e) => { t = +e.target.value; };
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+  if (e.code === "Space") { e.preventDefault(); $("play").click(); }
+  if (e.code === "ArrowRight") { pausar(true); t = Math.min(Math.floor(t) + 1, Q.length - 1); }
+  if (e.code === "ArrowLeft") { pausar(true); t = Math.max(Math.floor(t) - 1, 0); }
+});
+
+function aviso(msg) { $("aviso").textContent = msg; $("aviso").hidden = !msg; cv.hidden = !!msg; }
+
+async function abrir(id) {
+  const p = indice.find((x) => x.id === id) || indice[0];
+  if (!p) return;
+  for (const el of document.querySelectorAll(".item")) el.setAttribute("aria-current", el.dataset.id === p.id ? "true" : "false");
+  $("nv").textContent = p.vermelho; $("na").textContent = p.azul;
+  aviso("Carregando a partida…");
+  try {
+    const r = await fetch("partidas/" + p.id + ".json");
+    if (!r.ok) throw new Error(r.status);
+    D = await r.json();
+  } catch (e) { D = null; aviso("Não consegui carregar esta partida. Recarregue a página para tentar de novo."); return; }
+  Q = D.quadros; M = D.mapa; PASSOS_POR_S = 60 / (D.tick_skip || 1);
+  $("barra").max = Q.length - 1; t = 0; aviso(""); ajustar(); pausar(false);
+}
+
+function lista() {
+  const box = $("itens"); box.textContent = "";
+  for (const p of indice) {
+    const el = document.createElement("button");
+    el.type = "button"; el.className = "item"; el.dataset.id = p.id;
+    const [a, m, d] = p.data.split("-");
+    el.innerHTML = '<span class="data"></span><span class="tit"></span><span class="res"></span><span class="txt"></span>';
+    el.querySelector(".data").textContent = `${d}/${m}/${a}`;
+    el.querySelector(".tit").textContent = p.titulo;
+    el.querySelector(".res").textContent = `${p.placar[0]} x ${p.placar[1]}`;
+    el.querySelector(".txt").textContent = p.texto;
+    el.onclick = () => { location.hash = p.id; };
+    box.appendChild(el);
+  }
+}
+
+window.addEventListener("hashchange", () => abrir(location.hash.slice(1)));
+
+(async () => {
+  try {
+    const r = await fetch("partidas/indice.json");
+    indice = await r.json();
+  } catch (e) { aviso("Não consegui carregar a lista de partidas. Recarregue a página."); return; }
+  lista();
+  await abrir(location.hash.slice(1));
+  requestAnimationFrame(laco);
+})();
+</script>
+</body>
+</html>

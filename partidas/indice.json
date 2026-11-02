@@ -1,0 +1,15 @@
+[
+ {
+  "id": "apolo13-x-apolo12",
+  "titulo": "Apolo 1.3 x Apolo 1.2",
+  "vermelho": "Apolo 1.3",
+  "azul": "Apolo 1.2",
+  "placar": [
+   2,
+   1
+  ],
+  "duracao": 180,
+  "data": "2026-11-02",
+  "texto": "A versão nova contra a anterior, no simulador, decidindo 60 vezes por segundo. A 1.3 ganha 56% das partidas da 1.2 e treinou o passe com o receptor correndo para a bola."
+ }
+]
