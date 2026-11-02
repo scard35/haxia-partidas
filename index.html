@@ -6,123 +6,204 @@
 <title>HaxIA Partidas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;700;800&family=Source+Sans+3:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Doto:wght@700;900&display=swap">
 <style>
-  /* Layout: placar de transmissão em cima, o campo inteiro na largura, a lista de partidas como uma súmula embaixo */
+  /* Layout: o placar de ginásio (painel escuro, números de LED) é a peça marcante; embaixo o campo inteiro, os controles numa
+     linha só e a lista de partidas como uma tabela leve. Tudo alinhado à esquerda, uma coluna. */
   :root {
-    --bg: #eef1ec; --painel: #ffffff; --texto: #1c2420; --suave: #5d6a60; --linha: #d3dbd0;
-    --verm: #cc4f38; --azul: #3a68c8; --campo: #5f7f4c; --destaque: #2f6b3c;
-    --f-placar: "Saira Condensed", "Arial Narrow", sans-serif;
-    --f-texto: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+    --fundo: #eef0ec; --superficie: #ffffff; --tinta: #1d2321; --tinta-suave: #5b6560; --borda: #d5dad3;
+    --verm: #d9573f; --azul: #3f74d8; --grama: #718c5a; --foco: #3f74d8;
+    --painel: #171c1e; --painel-texto: #e9ece8; --led: #ffb627; --led-fraco: rgba(255, 182, 39, 0.16);
+    --f-led: "Doto", "Courier New", monospace;
+    --f-texto: "Barlow", "Segoe UI", system-ui, sans-serif;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #111512; --painel: #1a201b; --texto: #e4eae3; --suave: #95a196; --linha: #2b342c;
-      --verm: #ec735c; --azul: #6c96ee; --campo: #55744a; --destaque: #78c487; color-scheme: dark;
+      --fundo: #121517; --superficie: #1b2023; --tinta: #e7ebe8; --tinta-suave: #9aa39e; --borda: #2b3236;
+      --verm: #ec7660; --azul: #6e9bf0; --foco: #8fb2f4; --painel: #0c1012; color-scheme: dark;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #111512; --painel: #1a201b; --texto: #e4eae3; --suave: #95a196; --linha: #2b342c;
-    --verm: #ec735c; --azul: #6c96ee; --campo: #55744a; --destaque: #78c487; color-scheme: dark;
+    --fundo: #121517; --superficie: #1b2023; --tinta: #e7ebe8; --tinta-suave: #9aa39e; --borda: #2b3236;
+    --verm: #ec7660; --azul: #6e9bf0; --foco: #8fb2f4; --painel: #0c1012; color-scheme: dark;
   }
-  body { background: var(--bg); color: var(--texto); font: 16px/1.5 var(--f-texto); }
+  body { background: var(--fundo); color: var(--tinta); font: 400 17px/1.5 var(--f-texto); }
   .pagina {
-    max-width: 1080px; margin: 0 auto; display: grid; gap: 20px;
-    padding-block: 20px 40px;
+    max-width: 1040px; margin: 0 auto; display: grid; gap: 14px;
+    padding-block: 18px 48px;
     padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
   }
-  .topo { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 16px; flex-wrap: wrap; }
-  .marca { font: 800 30px/1 var(--f-placar); letter-spacing: 0.02em; margin: 0; }
-  .marca span { color: var(--destaque); }
-  .sub { color: var(--suave); margin: 0; max-width: 60ch; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
 
-  .tela { background: var(--painel); border: 1px solid var(--linha); border-radius: 10px; overflow: hidden; }
+  .topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .marca { margin: 0; font: 700 24px/1 var(--f-texto); letter-spacing: -0.01em; }
+  .marca small { font-weight: 500; color: var(--tinta-suave); margin-left: 6px; }
+  .copiar {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid var(--borda); background: var(--superficie); font-weight: 600; font-size: 15px;
+  }
+  .copiar svg { width: 16px; height: 16px; }
+
+  /* o placar */
   .placar {
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
-    padding: 10px 16px; border-bottom: 1px solid var(--linha);
+    background: var(--painel); color: var(--painel-texto); border-radius: 14px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 8px 16px; padding: 14px 18px;
   }
-  .time { font: 700 clamp(17px, 3.4vw, 24px)/1.1 var(--f-placar); letter-spacing: 0.02em; text-transform: uppercase; min-width: 0; overflow-wrap: anywhere; }
-  .time.v { color: var(--verm); text-align: right; } .time.a { color: var(--azul); }
-  .gols { font: 800 clamp(28px, 6vw, 40px)/1 var(--f-placar); font-variant-numeric: tabular-nums; display: flex; gap: 10px; align-items: center; }
-  .gols .x { color: var(--suave); font-weight: 500; font-size: 0.6em; }
-  .gols .v { color: var(--verm); } .gols .a { color: var(--azul); }
-  canvas { display: block; width: 100%; background: var(--campo); }
-  .controles { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; padding: 10px 16px; border-top: 1px solid var(--linha); }
-  button, select {
-    font: 600 15px var(--f-texto); color: var(--texto); background: var(--bg); border: 1px solid var(--linha);
-    border-radius: 6px; padding: 6px 12px; cursor: pointer;
+  .time { display: flex; align-items: center; gap: 10px; min-width: 0; font: 600 clamp(16px, 3vw, 22px)/1.15 var(--f-texto); }
+  .time.dir { justify-content: flex-end; text-align: right; }
+  .time span { min-width: 0; overflow-wrap: anywhere; }
+  .cor { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.85); }
+  .cor.v { background: var(--verm); } .cor.a { background: var(--azul); }
+  .gols { display: grid; justify-items: center; gap: 2px; }
+  .numeros {
+    font: 900 clamp(40px, 9vw, 64px)/0.9 var(--f-led); color: var(--led); letter-spacing: 0.04em;
+    text-shadow: 0 0 18px var(--led-fraco); font-variant-numeric: tabular-nums; white-space: nowrap;
   }
-  button:focus-visible, select:focus-visible, input:focus-visible, .item:focus-visible { outline: 2px solid var(--destaque); outline-offset: 2px; }
-  #barra { flex: 1 1 180px; min-width: 0; accent-color: var(--destaque); }
-  .relogio { font: 700 20px var(--f-placar); font-variant-numeric: tabular-nums; min-width: 3.2em; }
-  .estado { color: var(--suave); font-size: 14px; min-width: 7em; }
-  .legenda { color: var(--suave); font-size: 14px; margin: 0; padding: 0 16px 12px; }
-  .aviso { padding: 40px 16px; text-align: center; color: var(--suave); }
+  .relogio { font: 700 clamp(16px, 2.6vw, 20px)/1 var(--f-led); color: var(--painel-texto); opacity: 0.75; font-variant-numeric: tabular-nums; }
+  .situacao { grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--led); min-height: 1.4em; margin-top: -2px; }
 
-  .lista { display: grid; gap: 0; border-top: 2px solid var(--texto); }
-  .lista h2 { font: 700 15px var(--f-placar); text-transform: uppercase; letter-spacing: 0.08em; color: var(--suave); margin: 10px 0 4px; }
-  .item {
-    display: grid; grid-template-columns: 6.5em 1fr auto; gap: 4px 16px; align-items: baseline;
-    padding: 12px 4px; border-bottom: 1px solid var(--linha); cursor: pointer; background: none; text-align: left; border-radius: 0;
-    border-left: 0; border-right: 0; border-top: 0; font-weight: 400;
+  /* o campo */
+  .campo { position: relative; border-radius: 14px; overflow: hidden; background: var(--grama); }
+  .campo canvas { display: block; width: 100%; cursor: pointer; }
+  .tocar-grande {
+    position: absolute; inset: 0; margin: auto; width: 76px; height: 76px; border-radius: 50%; border: 0;
+    background: rgba(12, 16, 18, 0.72); display: grid; place-items: center;
   }
-  .item:hover { background: var(--painel); }
-  .item[aria-current="true"] { background: var(--painel); box-shadow: inset 3px 0 0 var(--destaque); }
-  .item .data { color: var(--suave); font-variant-numeric: tabular-nums; font-size: 14px; }
-  .item .tit { font: 700 19px var(--f-placar); letter-spacing: 0.02em; min-width: 0; }
-  .item .res { font: 800 20px var(--f-placar); font-variant-numeric: tabular-nums; }
-  .item .txt { grid-column: 2 / 4; color: var(--suave); font-size: 15px; min-width: 0; }
-  @media (max-width: 520px) {
-    .item { grid-template-columns: 1fr auto; }
-    .item .data { grid-column: 1 / 3; }
-    .item .txt { grid-column: 1 / 3; }
+  .tocar-grande svg { width: 34px; height: 34px; fill: #fff; margin-left: 4px; }
+  .aviso { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; text-align: center; color: #fff;
+           background: rgba(12, 16, 18, 0.55); font-weight: 600; }
+
+  /* controles */
+  .controles { display: flex; align-items: center; gap: 8px 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-grid; place-items: center; min-width: 42px; height: 42px; padding: 0 10px; border-radius: 10px;
+    background: var(--superficie); border: 1px solid var(--borda); font-weight: 600; font-size: 15px;
+  }
+  .btn svg { width: 20px; height: 20px; fill: currentColor; }
+  .btn.principal { background: var(--tinta); color: var(--fundo); border-color: var(--tinta); }
+  .linha-tempo { position: relative; flex: 1 1 220px; min-width: 0; height: 42px; display: flex; align-items: center; }
+  .linha-tempo input { width: 100%; margin: 0; accent-color: var(--tinta); }
+  .marcas { position: absolute; left: 8px; right: 8px; top: 0; height: 100%; pointer-events: none; }
+  .marca-gol { position: absolute; top: 5px; width: 4px; height: 9px; border-radius: 2px; transform: translateX(-50%); }
+  .marca-gol.v { background: var(--verm); } .marca-gol.a { background: var(--azul); }
+  .tempo { font-variant-numeric: tabular-nums; color: var(--tinta-suave); font-size: 15px; min-width: 6.2em; }
+  .velocidades { display: inline-flex; border: 1px solid var(--borda); border-radius: 10px; overflow: hidden; background: var(--superficie); }
+  .velocidades button { border: 0; background: none; height: 40px; padding: 0 11px; font-weight: 600; font-size: 15px; color: var(--tinta-suave); }
+  .velocidades button[aria-pressed="true"] { background: var(--tinta); color: var(--fundo); }
+
+  /* os gols da partida */
+  .lances { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0; padding: 0; list-style: none; }
+  .lances .rotulo { color: var(--tinta-suave); font-size: 15px; margin-right: 2px; }
+  .lance {
+    display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--borda); background: var(--superficie);
+    border-radius: 999px; padding: 4px 12px 4px 8px; font-size: 15px;
+  }
+  .lance b { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .ajuda { color: var(--tinta-suave); font-size: 15px; margin: 0; max-width: 72ch; }
+
+  /* lista de partidas */
+  .partidas { margin-top: 18px; display: grid; gap: 4px; }
+  .partidas h2 { font: 700 20px/1.2 var(--f-texto); margin: 0 0 6px; }
+  .partida {
+    display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: 2px 16px; text-align: left;
+    background: none; border: 0; border-top: 1px solid var(--borda); padding: 14px 8px; border-radius: 0;
+  }
+  .partida:hover { background: var(--superficie); }
+  .partida[aria-current="true"] { background: var(--superficie); box-shadow: inset 4px 0 0 var(--led); }
+  .partida .quando { color: var(--tinta-suave); font-size: 15px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .partida .confronto { font-weight: 600; font-size: 18px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+  .partida .confronto .v { color: var(--verm); } .partida .confronto .a { color: var(--azul); }
+  .partida .res { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .partida .sobre { grid-column: 2; color: var(--tinta-suave); font-size: 16px; }
+  .toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+    background: var(--tinta); color: var(--fundo); padding: 10px 16px; border-radius: 10px; font-weight: 600;
+  }
+  @media (max-width: 560px) {
+    .placar { grid-template-columns: 1fr 1fr; padding: 12px 14px; }
+    .gols { grid-column: 1 / -1; grid-row: 1; }
+    .time.dir { justify-content: flex-end; }
+    .tempo { min-width: 0; }
+    .partida { grid-template-columns: 1fr; }
+    .partida .sobre { grid-column: 1; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .numeros.pulso { animation: pulso 0.9s ease-out 2; }
+    @keyframes pulso { 50% { text-shadow: 0 0 34px var(--led); } }
   }
 </style>
-<style>body{margin:0}[hidden]{display:none!important}</style>
+<style>body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style>
 </head>
 <body>
 
 <div class="pagina">
   <header class="topo">
-    <h1 class="marca">Hax<span>IA</span> · Partidas</h1>
-    <p class="sub">Partidas da IA de futsal 3x3 do HaxBall, jogadas no simulador. O vermelho e o azul são versões da IA, os três jogadores de cada time.</p>
+    <h1 class="marca">HaxIA <small>partidas</small></h1>
+    <button class="copiar" id="copiar" type="button" aria-label="Copiar o link desta partida">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0Zm-2.9 5.3a4 4 0 0 1-2.8-6.8l2.1-2.1a1 1 0 1 1 1.4 1.4l-2.1 2.1a2 2 0 0 0 2.8 2.8l2.1-2.1a1 1 0 1 1 1.4 1.4l-2.1 2.1a4 4 0 0 1-2.8 1.2Zm7.8-5.5a1 1 0 0 1-.7-1.7l2.1-2.1a2 2 0 0 0-2.8-2.8l-2.1 2.1a1 1 0 1 1-1.4-1.4l2.1-2.1a4 4 0 0 1 5.6 5.6l-2.1 2.1a1 1 0 0 1-.7.3Z"/></svg>
+      Copiar link
+    </button>
   </header>
 
-  <section class="tela" aria-label="Partida">
-    <div class="placar">
-      <div class="time v" id="nv">…</div>
-      <div class="gols"><span class="v" id="gv">0</span><span class="x">x</span><span class="a" id="ga">0</span></div>
-      <div class="time a" id="na">…</div>
+  <section class="placar" aria-label="Placar">
+    <div class="time"><i class="cor v" aria-hidden="true"></i><span id="nv">Carregando…</span></div>
+    <div class="gols">
+      <div class="numeros" id="numeros" aria-live="polite">0:0</div>
+      <div class="relogio" id="rel">0:00</div>
     </div>
-    <canvas id="campo" width="1080" height="470"></canvas>
-    <div class="aviso" id="aviso" hidden></div>
-    <div class="controles">
-      <button id="play" type="button">Pausar</button>
-      <label class="estado" for="vel" hidden>Velocidade</label>
-      <select id="vel" aria-label="Velocidade">
-        <option value="0.25">0,25x</option><option value="0.5">0,5x</option>
-        <option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
-      </select>
-      <input type="range" id="barra" min="0" value="0" aria-label="Momento da partida">
-      <span class="relogio" id="rel">0:00</span>
-      <span class="estado" id="est"></span>
-    </div>
-    <p class="legenda">GK, VL e PV: a posição de cada jogador naquele momento (goleiro, volante, pivô). O anel branco é o chute armado. Espaço pausa, as setas andam quadro a quadro.</p>
+    <div class="time dir"><span id="na"></span><i class="cor a" aria-hidden="true"></i></div>
+    <div class="situacao" id="situacao"></div>
   </section>
 
-  <nav class="lista" aria-label="Partidas publicadas">
+  <div class="campo" id="tela">
+    <canvas id="campo" width="1040" height="452" aria-label="Campo da partida. Toque para tocar ou pausar."></canvas>
+    <button class="tocar-grande" id="tocarGrande" type="button" aria-label="Tocar" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5Z"/></svg>
+    </button>
+    <div class="aviso" id="aviso" hidden></div>
+  </div>
+
+  <div class="controles">
+    <button class="btn principal" id="play" type="button" aria-label="Pausar"></button>
+    <button class="btn" id="voltar" type="button" aria-label="Voltar 5 segundos">−5s</button>
+    <button class="btn" id="avancar" type="button" aria-label="Avançar 5 segundos">+5s</button>
+    <div class="linha-tempo">
+      <input type="range" id="barra" min="0" max="1" value="0" aria-label="Momento da partida">
+      <div class="marcas" id="marcas" aria-hidden="true"></div>
+    </div>
+    <span class="tempo" id="tempo">0:00 / 0:00</span>
+    <div class="velocidades" role="group" aria-label="Velocidade">
+      <button type="button" data-v="0.5" aria-pressed="false">0,5x</button>
+      <button type="button" data-v="1" aria-pressed="true">1x</button>
+      <button type="button" data-v="2" aria-pressed="false">2x</button>
+      <button type="button" data-v="4" aria-pressed="false">4x</button>
+    </div>
+    <button class="btn" id="cheia" type="button" aria-label="Tela cheia">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4v2H6v3H4Zm11-5h4a1 1 0 0 1 1 1v4h-2V6h-3V4ZM6 15v3h3v2H5a1 1 0 0 1-1-1v-4h2Zm12 0h2v4a1 1 0 0 1-1 1h-4v-2h3v-3Z"/></svg>
+    </button>
+  </div>
+
+  <ul class="lances" id="lances"></ul>
+  <p class="ajuda" id="ajuda">Cada time são três jogadores da mesma versão da IA. Dentro de cada jogador aparece a posição dele naquele momento: GK goleiro, VL volante, PV pivô. O anel branco é o chute armado.</p>
+
+  <section class="partidas" aria-label="Partidas publicadas">
     <h2>Partidas publicadas</h2>
     <div id="itens"></div>
-  </nav>
+  </section>
 </div>
+<div class="toast" id="toast" role="status" hidden></div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 const cv = $("campo"), cx = cv.getContext("2d");
-let D = null, Q = [], M = null, t = 0, tocando = true, vel = 1, ultimo = null, PASSOS_POR_S = 60;
-let indice = [];
+const ICONE_PAUSA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>';
+const ICONE_TOCAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13a1 1 0 0 0 1.5.9l10.4-6.5a1 1 0 0 0 0-1.8L9.5 4.6A1 1 0 0 0 8 5.5Z"/></svg>';
+let D = null, Q = [], M = null, t = 0, tocando = false, vel = 1, ultimo = null, PS = 60, gols = [], atual = null;
+let indice = [], placarAntes = "";
 
-function cor(nome) { return getComputedStyle(document.documentElement).getPropertyValue(nome).trim(); }
+const cor = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const mmss = (q) => { const s = Math.floor(q / 60); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
 
 function ajustar() {
   if (!M) return;
@@ -130,6 +211,7 @@ function ajustar() {
   cv.width = Math.round(w * dpr); cv.height = Math.round(w * (M.h / M.w) * dpr);
 }
 window.addEventListener("resize", ajustar);
+document.addEventListener("fullscreenchange", () => setTimeout(ajustar, 50));
 
 function disco(x, y, r, preench, borda, larg) {
   cx.beginPath(); cx.arc(x, y, r, 0, 2 * Math.PI);
@@ -142,90 +224,153 @@ function desenhar() {
   const a = Q[i], b = Q[j], lerp = (p, q) => p + (q - p) * f;
   const s = cv.width / (2 * M.w);
   cx.setTransform(1, 0, 0, 1, 0, 0);
-  cx.fillStyle = cor("--campo"); cx.fillRect(0, 0, cv.width, cv.height);
+  cx.fillStyle = cor("--grama"); cx.fillRect(0, 0, cv.width, cv.height);
   cx.setTransform(s, 0, 0, s, cv.width / 2, cv.height / 2);
   cx.lineCap = "round"; cx.lineJoin = "round";
   for (const l of M.linhas) {
     cx.beginPath(); cx.moveTo(l.p[0][0], l.p[0][1]);
     for (const p of l.p.slice(1)) cx.lineTo(p[0], p[1]);
-    cx.strokeStyle = "rgba(240,244,236,0.92)"; cx.lineWidth = 3; cx.stroke();
+    cx.strokeStyle = "rgba(244,246,240,0.9)"; cx.lineWidth = 3; cx.stroke();
   }
   for (const d of M.discos) disco(d[0], d[1], d[2], "#f4f4f0", "#1c1c1c", 2);
   const verm = cor("--verm"), azul = cor("--azul");
   for (let k = 0; k < 6; k++) {
-    const x = lerp(a[2][k][0], b[2][k][0]), y = lerp(a[2][k][1], b[2][k][1]);
-    const armado = a[3][k];
+    const x = lerp(a[2][k][0], b[2][k][0]), y = lerp(a[2][k][1], b[2][k][1]), armado = a[3][k];
     disco(x, y, D.raio_jog, k < 3 ? verm : azul, armado ? "#ffffff" : "#141414", armado ? 4 : 2);
-    cx.fillStyle = "#ffffff"; cx.font = "700 12px 'Saira Condensed', sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
+    cx.fillStyle = "#ffffff"; cx.font = "700 12px Barlow, sans-serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
     cx.fillText(a.length > 8 ? a[8][k] : D.papeis[k], x, y + 1);
   }
   disco(lerp(a[0], b[0]), lerp(a[1], b[1]), D.raio_bola, "#ffcc00", "#141414", 2);
-  $("gv").textContent = a[4]; $("ga").textContent = a[5];
-  const seg = Math.floor(a[6] / 60);
-  $("rel").textContent = Math.floor(seg / 60) + ":" + String(seg % 60).padStart(2, "0");
-  $("est").textContent = ["saída de bola", "", "gol!"][a[7]] || "";
+  const placar = a[4] + ":" + a[5];
+  if (placar !== placarAntes) {
+    $("numeros").textContent = placar;
+    if (placarAntes) { const n = $("numeros"); n.classList.remove("pulso"); void n.offsetWidth; n.classList.add("pulso"); }
+    placarAntes = placar;
+  }
+  $("rel").textContent = mmss(a[6]);
+  $("situacao").textContent = a[7] === 2 ? "Gol!" : a[7] === 0 ? "Saída de bola" : "";
   $("barra").value = i;
+  $("tempo").textContent = mmss(a[6]) + " / " + mmss(Q[Q.length - 1][6]);
 }
 
 function laco(agora) {
   if (D && ultimo !== null && tocando) {
-    t = Math.min(t + (agora - ultimo) / 1000 * PASSOS_POR_S * vel, Q.length - 1);
+    t = Math.min(t + (agora - ultimo) / 1000 * PS * vel, Q.length - 1);
     if (t >= Q.length - 1) pausar(true);
   }
   ultimo = agora; desenhar(); requestAnimationFrame(laco);
 }
-function pausar(p) { tocando = !p; $("play").textContent = tocando ? "Pausar" : "Tocar"; }
-$("play").onclick = () => { if (t >= Q.length - 1) t = 0; pausar(tocando); };
-$("vel").onchange = (e) => { vel = +e.target.value; };
+function pausar(p) {
+  tocando = !p;
+  $("play").innerHTML = tocando ? ICONE_PAUSA : ICONE_TOCAR;
+  $("play").setAttribute("aria-label", tocando ? "Pausar" : "Tocar");
+  $("tocarGrande").hidden = tocando || !D;
+}
+function alternar() { if (!D) return; if (!tocando && t >= Q.length - 1) t = 0; pausar(tocando); }
+function pular(seg) { if (!D) return; t = Math.max(0, Math.min(Q.length - 1, Math.floor(t) + seg * PS)); }
+
+$("play").onclick = alternar;
+$("tocarGrande").onclick = alternar;
+cv.onclick = alternar;
+$("voltar").onclick = () => pular(-5);
+$("avancar").onclick = () => pular(5);
 $("barra").oninput = (e) => { t = +e.target.value; };
+for (const b of document.querySelectorAll(".velocidades button")) {
+  b.onclick = () => {
+    vel = +b.dataset.v;
+    for (const o of document.querySelectorAll(".velocidades button")) o.setAttribute("aria-pressed", String(o === b));
+  };
+}
+$("cheia").onclick = async () => {
+  try { document.fullscreenElement ? await document.exitFullscreen() : await $("tela").requestFullscreen(); } catch (e) { /* sem tela cheia aqui */ }
+};
 document.addEventListener("keydown", (e) => {
-  if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
-  if (e.code === "Space") { e.preventDefault(); $("play").click(); }
-  if (e.code === "ArrowRight") { pausar(true); t = Math.min(Math.floor(t) + 1, Q.length - 1); }
-  if (e.code === "ArrowLeft") { pausar(true); t = Math.max(Math.floor(t) - 1, 0); }
+  if (e.target.tagName === "INPUT" && e.code !== "Space") return;
+  if (e.code === "Space") { e.preventDefault(); alternar(); }
+  if (e.code === "ArrowRight") { e.preventDefault(); pular(e.shiftKey ? 1 / PS : 5); }
+  if (e.code === "ArrowLeft") { e.preventDefault(); pular(e.shiftKey ? -1 / PS : -5); }
 });
 
-function aviso(msg) { $("aviso").textContent = msg; $("aviso").hidden = !msg; cv.hidden = !!msg; }
+function toast(msg) {
+  const el = $("toast"); el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2200);
+}
+$("copiar").onclick = async () => {
+  const link = location.href.split("#")[0] + (atual ? "#" + atual.id : "");
+  try { await navigator.clipboard.writeText(link); toast("Link copiado"); }
+  catch (e) { toast(link); }
+};
+
+function aviso(msg) { $("aviso").textContent = msg; $("aviso").hidden = !msg; }
+
+function achaGols() {
+  gols = [];
+  for (let i = 1; i < Q.length; i++) {
+    if (Q[i][4] > Q[i - 1][4]) gols.push({ i, time: "v", rel: Q[i][6] });
+    if (Q[i][5] > Q[i - 1][5]) gols.push({ i, time: "a", rel: Q[i][6] });
+  }
+  const marcas = $("marcas"); marcas.textContent = "";
+  const lances = $("lances"); lances.textContent = "";
+  if (gols.length) {
+    const r = document.createElement("li"); r.className = "rotulo"; r.textContent = "Gols:"; lances.appendChild(r);
+  }
+  for (const g of gols) {
+    const m = document.createElement("i"); m.className = "marca-gol " + g.time;
+    m.style.left = (100 * g.i / (Q.length - 1)) + "%"; marcas.appendChild(m);
+    const li = document.createElement("li");
+    const b = document.createElement("button"); b.type = "button"; b.className = "lance";
+    b.innerHTML = '<i class="cor ' + g.time + '" aria-hidden="true"></i><b></b><span></span>';
+    b.querySelector("b").textContent = mmss(g.rel);
+    b.querySelector("span").textContent = g.time === "v" ? atual.vermelho : atual.azul;
+    b.setAttribute("aria-label", "Ver o gol de " + (g.time === "v" ? atual.vermelho : atual.azul) + " aos " + mmss(g.rel));
+    b.onclick = () => { t = Math.max(0, g.i - 6 * PS); pausar(false); };   // começa 6 s antes do gol
+    li.appendChild(b); lances.appendChild(li);
+  }
+}
 
 async function abrir(id) {
   const p = indice.find((x) => x.id === id) || indice[0];
-  if (!p) return;
-  for (const el of document.querySelectorAll(".item")) el.setAttribute("aria-current", el.dataset.id === p.id ? "true" : "false");
+  if (!p) { aviso("Ainda não há partidas publicadas."); return; }
+  atual = p;
+  for (const el of document.querySelectorAll(".partida")) el.setAttribute("aria-current", String(el.dataset.id === p.id));
   $("nv").textContent = p.vermelho; $("na").textContent = p.azul;
-  aviso("Carregando a partida…");
+  D = null; pausar(true); aviso("Carregando a partida…");
   try {
     const r = await fetch("partidas/" + p.id + ".json");
-    if (!r.ok) throw new Error(r.status);
+    if (!r.ok) throw new Error(String(r.status));
     D = await r.json();
-  } catch (e) { D = null; aviso("Não consegui carregar esta partida. Recarregue a página para tentar de novo."); return; }
-  Q = D.quadros; M = D.mapa; PASSOS_POR_S = 60 / (D.tick_skip || 1);
-  $("barra").max = Q.length - 1; t = 0; aviso(""); ajustar(); pausar(false);
+  } catch (e) { aviso("Não deu para carregar esta partida. Recarregue a página para tentar de novo."); return; }
+  Q = D.quadros; M = D.mapa; PS = 60 / (D.tick_skip || 1);
+  $("barra").max = Q.length - 1; t = 0; placarAntes = "";
+  aviso(""); ajustar(); achaGols(); pausar(true);
 }
 
-function lista() {
+function montarLista() {
   const box = $("itens"); box.textContent = "";
   for (const p of indice) {
     const el = document.createElement("button");
-    el.type = "button"; el.className = "item"; el.dataset.id = p.id;
-    const [a, m, d] = p.data.split("-");
-    el.innerHTML = '<span class="data"></span><span class="tit"></span><span class="res"></span><span class="txt"></span>';
-    el.querySelector(".data").textContent = `${d}/${m}/${a}`;
-    el.querySelector(".tit").textContent = p.titulo;
-    el.querySelector(".res").textContent = `${p.placar[0]} x ${p.placar[1]}`;
-    el.querySelector(".txt").textContent = p.texto;
-    el.onclick = () => { location.hash = p.id; };
+    el.type = "button"; el.className = "partida"; el.dataset.id = p.id;
+    el.innerHTML = '<span class="quando"></span><span class="confronto"><span class="v"></span><span class="res"></span><span class="a"></span></span><span class="sobre"></span>';
+    const [ano, mes, dia] = p.data.split("-");
+    el.querySelector(".quando").textContent = dia + "/" + mes + "/" + ano;
+    el.querySelector(".v").textContent = p.vermelho;
+    el.querySelector(".res").textContent = p.placar[0] + " x " + p.placar[1];
+    el.querySelector(".a").textContent = p.azul;
+    el.querySelector(".sobre").textContent = p.texto;
+    el.onclick = () => { if (location.hash.slice(1) === p.id) abrir(p.id); else location.hash = p.id; window.scrollTo({ top: 0 }); };
     box.appendChild(el);
   }
 }
 
 window.addEventListener("hashchange", () => abrir(location.hash.slice(1)));
-
+pausar(true);
 (async () => {
   try {
     const r = await fetch("partidas/indice.json");
+    if (!r.ok) throw new Error(String(r.status));
     indice = await r.json();
-  } catch (e) { aviso("Não consegui carregar a lista de partidas. Recarregue a página."); return; }
-  lista();
+  } catch (e) { aviso("Não deu para carregar a lista de partidas. Recarregue a página."); return; }
+  montarLista();
   await abrir(location.hash.slice(1));
   requestAnimationFrame(laco);
 })();
