@@ -10,20 +10,12 @@
 <style>
   /* Layout: o placar numa barra simples (como a do próprio jogo), embaixo o campo inteiro, os controles numa
      linha só e a lista de partidas como uma tabela leve. Tudo alinhado à esquerda, uma coluna. */
+  /* sempre escuro (pedido do usuário, 02/11), em qualquer aparelho */
   :root {
-    --fundo: #eef0ec; --superficie: #ffffff; --tinta: #1d2321; --tinta-suave: #5b6560; --borda: #d5dad3;
-    --verm: #d9573f; --azul: #3f74d8; --grama: #718c5a; --foco: #3f74d8;
-    --f-texto: "Barlow", "Segoe UI", system-ui, sans-serif;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --fundo: #121517; --superficie: #1b2023; --tinta: #e7ebe8; --tinta-suave: #9aa39e; --borda: #2b3236;
-      --verm: #ec7660; --azul: #6e9bf0; --foco: #8fb2f4; color-scheme: dark;
-    }
-  }
-  :root[data-theme="dark"] {
     --fundo: #121517; --superficie: #1b2023; --tinta: #e7ebe8; --tinta-suave: #9aa39e; --borda: #2b3236;
-    --verm: #ec7660; --azul: #6e9bf0; --foco: #8fb2f4; color-scheme: dark;
+    --verm: #ec7660; --azul: #6e9bf0; --grama: #718c5a; --foco: #8fb2f4;
+    --f-texto: "Barlow", "Segoe UI", system-ui, sans-serif;
+    color-scheme: dark;
   }
   body { background: var(--fundo); color: var(--tinta); font: 400 17px/1.5 var(--f-texto); }
   .pagina {
