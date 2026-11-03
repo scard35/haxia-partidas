@@ -60,7 +60,8 @@
     font: 900 clamp(40px, 9vw, 64px)/0.9 var(--f-led); color: var(--led); letter-spacing: 0.04em;
     text-shadow: 0 0 18px var(--led-fraco); font-variant-numeric: tabular-nums; white-space: nowrap;
   }
-  .relogio { font: 700 clamp(16px, 2.6vw, 20px)/1 var(--f-led); color: var(--painel-texto); opacity: 0.75; font-variant-numeric: tabular-nums; }
+  .numeros .sep { font: 500 0.5em/1 var(--f-texto); color: var(--painel-texto); opacity: 0.5; margin: 0 0.35em; vertical-align: 0.35em; text-shadow: none; }
+  .relogio { font: 600 clamp(15px, 2.4vw, 18px)/1 var(--f-texto); color: var(--painel-texto); opacity: 0.7; font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
   .situacao { grid-column: 1 / -1; text-align: center; font-size: 14px; color: var(--led); min-height: 1.4em; margin-top: -2px; }
 
   /* o campo */
@@ -149,7 +150,7 @@
   <section class="placar" aria-label="Placar">
     <div class="time"><i class="cor v" aria-hidden="true"></i><span id="nv">Carregando…</span></div>
     <div class="gols">
-      <div class="numeros" id="numeros" aria-live="polite">0:0</div>
+      <div class="numeros" id="numeros" aria-live="polite"><span id="gv">0</span><span class="sep">–</span><span id="ga">0</span></div>
       <div class="relogio" id="rel">0:00</div>
     </div>
     <div class="time dir"><span id="na"></span><i class="cor a" aria-hidden="true"></i></div>
@@ -241,9 +242,9 @@ function desenhar() {
     cx.fillText(a.length > 8 ? a[8][k] : D.papeis[k], x, y + 1);
   }
   disco(lerp(a[0], b[0]), lerp(a[1], b[1]), D.raio_bola, "#ffcc00", "#141414", 2);
-  const placar = a[4] + ":" + a[5];
+  const placar = a[4] + "-" + a[5];
   if (placar !== placarAntes) {
-    $("numeros").textContent = placar;
+    $("gv").textContent = a[4]; $("ga").textContent = a[5];
     if (placarAntes) { const n = $("numeros"); n.classList.remove("pulso"); void n.offsetWidth; n.classList.add("pulso"); }
     placarAntes = placar;
   }
