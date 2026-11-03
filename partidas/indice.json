@@ -1,5 +1,44 @@
 [
  {
+  "id": "apolo12-x-apolo11",
+  "titulo": "Apolo 1.2 x Apolo 1.1",
+  "vermelho": "Apolo 1.2",
+  "azul": "Apolo 1.1",
+  "placar": [
+   1,
+   2
+  ],
+  "duracao": 192,
+  "data": "2026-11-02",
+  "texto": "A versão que está na sala contra a anterior. A 1.2 ganha 53% das partidas da 1.1 no simulador: é uma melhora pequena, e nesta partida quem venceu foi a 1.1."
+ },
+ {
+  "id": "apolo11-x-apolo1",
+  "titulo": "Apolo 1.1 x Apolo 1",
+  "vermelho": "Apolo 1.1",
+  "azul": "Apolo 1",
+  "placar": [
+   3,
+   1
+  ],
+  "duracao": 177,
+  "data": "2026-11-02",
+  "texto": "A 1.1 trouxe o goleiro que fica no máximo até o meio campo e passa melhor, e o pivô disputando o primeiro toque nas bolas longas. Ganha 61% da Apolo 1 no simulador."
+ },
+ {
+  "id": "apolo1-x-inicial",
+  "titulo": "Apolo 1 x Inicial",
+  "vermelho": "Apolo 1",
+  "azul": "Inicial",
+  "placar": [
+   1,
+   0
+  ],
+  "duracao": 180,
+  "data": "2026-11-02",
+  "texto": "A primeira Apolo, que aprendeu com os jogos da sala, contra a primeira versão oficial, de 23/10, que deixava o goleiro preso na linha do gol."
+ },
+ {
   "id": "apolo13-x-apolo12",
   "titulo": "Apolo 1.3 x Apolo 1.2",
   "vermelho": "Apolo 1.3",
