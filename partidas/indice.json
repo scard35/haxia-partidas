@@ -1,5 +1,18 @@
 [
  {
+  "id": "apolo14-x-apolo12",
+  "titulo": "Apolo 1.4 x Apolo 1.2",
+  "vermelho": "Apolo 1.4",
+  "azul": "Apolo 1.2",
+  "placar": [
+   1,
+   2
+  ],
+  "duracao": 207,
+  "data": "2026-11-05",
+  "texto": "A nova versão contra a 1.2, sem escolher a partida: é a primeira que rodamos. O 1.4 ganha 58% das partidas no simulador (1.024 jogos), mas nesta quem venceu foi o 1.2. Uma partida só não mede força."
+ },
+ {
   "id": "apolo12-x-apolo11",
   "titulo": "Apolo 1.2 x Apolo 1.1",
   "vermelho": "Apolo 1.2",
